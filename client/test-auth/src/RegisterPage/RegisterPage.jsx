@@ -1,10 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { InputWithlabel } from '../InputWithLabel/InputWithLabel'
 import { BackButton } from '../BackButton/BackButton'
-// import axios from 'axios'
+import axios from 'axios'
 import './RegisterPage.css'
+import { useNavigate } from 'react-router-dom'
+import { ModalWindow } from '../ModalWindow/ModalWindow'
 
 export const RegisterPage = () => {
+
+    const navigate = useNavigate()
+    const [modalWindow, setModalWindow] = useState('none');
 
     //data states
     const [name, setName] = useState('')
@@ -17,35 +22,68 @@ export const RegisterPage = () => {
 
     //styles states
 
-    const [nameError, setNameError] = useState('')
-    const [usernameError, setUsernameError] = useState('')
-    const [emailError, setEmailError] = useState('')
-    const [phoneNumberError, setPhoneNumbaerError] = useState('')
-    const [passwordError, setPasswordError] = useState('')
+    const [nameError, setNameError] = useState()
+    const [usernameError, setUsernameError] = useState()
+    const [emailError, setEmailError] = useState()
+    const [phoneNumberError, setPhoneNumberError] = useState()
+    const [passwordError, setPasswordError] = useState()
 
-    const allError = [[nameError, setNameError], [usernameError, setUsernameError], [emailError, setEmailError], [phoneNumberError, setPhoneNumbaerError], [passwordError, setPasswordError]]
+    const allError = [[nameError, setNameError], [usernameError, setUsernameError], [emailError, setEmailError], [phoneNumberError, setPhoneNumberError], [passwordError, setPasswordError]]
+
+
+    const [check, setCheck] = useState()
+
+    const RequestToServer = async (check) => {
+        try {
+            const response = await axios.post('http://localhost:3001/auth/register', {
+                name: name,
+                username: username,
+                email: email,
+                phoneNumber: phoneNumber,
+                password: password,
+            });
+            console.log(response);
+            if (response.status === 201) {
+                setModalWindow('flex')
+            }
+        } catch (error) {
+            if (error.response.status == 409) {
+                error.response.data.message == 'username' ? setUsernameError('This username is taken') : error.response.data.message == 'email' ? setEmailError('This email is taken') : error.response.data.message == 'phone' ? setPhoneNumberError('This phone number is taken') : null
+            } else {
+                console.log(error);
+
+            }
+        }
+    }
+
+    const ErrorSearch = (error, setError, ErrorRegExp, ErrorMessage) => {
+        if (error == '') {
+            setError('emptyError')
+            return false
+        } else if (!ErrorRegExp.test(error)) {
+            setError(ErrorMessage)
+            return false
+        } else {
+            setError('')
+            return true
+        }
+
+    }
 
     const handleClick = async (event) => {
         event.preventDefault();
 
-        setNameError(name == "" ? "emptyError" : !(/^[a-zA-Z\s]{0,60}$/).test(name) ? "השם חייב להכיל רק תווים לטיניים" : "");
+        const nameCheck = ErrorSearch(name, setNameError, /^[a-zA-Z\s]{0,60}$/, "השם חייב להכיל рק тווים לטיניים")
+        const usernameCheck = ErrorSearch(username, setUsernameError, /^[a-zA-Z]{0,30}$/, "השם חייב להכיל рק тווים לטיניים")
+        const emailCheck = ErrorSearch(email, setEmailError, /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "האימייל שלך לא тואם לפורמט")
+        const phoneNumberCheck = ErrorSearch(phoneNumber, setPhoneNumberError, /^0\d{9}$/, "הטלפון שלך לא тואם לפורמט")
+        const passwordCheck = ErrorSearch(password, setPasswordError, /^(?=.*[A-Za-z])(?=.*\d).{8,}$/, "הסיסמה חייבת להכיל 8 תווים ולפחות מספר אחד ולפחות אות אחת")
 
-        setUsernameError(username == "" ? "emptyError" : !(/^[a-zA-Z]{0,30}$/).test(username) ? "השם חייב להכיל רק תווים לטיניים" : "");
 
-        setEmailError(email == "" ? "emptyError" : !(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).test(email) ? "האימייל שלך לא תואם לפורמט" : "");
+        if (nameCheck && usernameCheck && emailCheck && phoneNumberCheck && passwordCheck) {
+            RequestToServer()
+        }
 
-        setPhoneNumbaerError(phoneNumber == "" ? "emptyError" : !(/^0\d{9}$/).test(phoneNumber) ? "הטלפון שלך לא תואם לפורמט" : "");
-
-        setPasswordError(password == "" ? "emptyError" : !(/^(?=.*[A-Za-z])(?=.*\d).{8,}$/).test(password) ? "הטלפון שלך לא תואם לפורמט" : "");
-
-        let check = true
-        allError.forEach(item => {
-            item[0] != '' ? check = false : null
-        })
-
-        console.log(check)
-
-        //Делаем асинхронный запрос на сервер и отправляем данные
     }
 
     return (
@@ -68,6 +106,8 @@ export const RegisterPage = () => {
                     ולפחות אות אחת.</span>
                 <button className='register form-button' onClick={handleClick}>אישור</button>
             </form>
+
+            <ModalWindow text={'You were successfully registered'} styles={modalWindow} />
         </div>
     )
 

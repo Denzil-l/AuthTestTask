@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import './WelcomePage.css'
 import { useNavigate } from 'react-router-dom'
 
@@ -13,7 +14,9 @@ export const WelcomePage = () => {
             navigate('/login')
         }
     }
-
+    useEffect(() => {
+        console.log('я срабатываю только при первом рендере')
+    }, [])
     return (
         <>
             <div className="logo">

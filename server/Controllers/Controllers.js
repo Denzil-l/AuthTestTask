@@ -1,4 +1,4 @@
-import { getUserByPhoneNumber, createUser } from "../Models/Connections.js";
+import { getUserByPhoneNumber, createUser, checkFormData } from "../Models/Connections.js";
 
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
@@ -8,13 +8,17 @@ dotenv.config()
 export const Register = async (req,res) => {
     //Step 1
     //Server get a request and pull from the req.body all data
-    const {first_name, last_name, email, phone_number, password} = req.body
-
+    const {name, username, email, phoneNumber, password} = req.body
+    console.log(req.body)
     try {
         //Step 2
         //Server checks is this user in the table or not
-        const userExist = await getUserByPhoneNumber(phone_number)
+        console.log('2')
+        
+        const userExist = await checkFormData(username, email, phoneNumber)
         //If ther user doesn't exist, Server start to creating a new User
+        console.log('3')
+        console.log(userExist)
         if(!userExist){
             try {
             //Step 3
@@ -25,13 +29,19 @@ export const Register = async (req,res) => {
             try {
                 //Step 4
                 //Then Server create a new User in the table and response to client status 200
-                const newUser = await createUser({first_name: first_name, last_name: last_name, email: email, phone_number: phone_number, password: hashedPassword})
-                console.log(newUser)
-                res.status(200).json({meassge: 'New user was created'})
+                const newUser = await createUser({
+                    name,
+                    username,
+                    email,
+                    phone_number: phoneNumber,
+                    password: hashedPassword,
+                  });                
+                  console.log(newUser)
+                res.status(201).json({meassge: 'New user was created'})
             } catch (error) {
                 console.log('Error happened on stage of creating a new user ')
                 console.log(error)
-                res.status(500).json({meassge: 'Something was wrong when server tried to create a new user'})
+                res.status(409).json({meassge: error})
             }
         } catch (error) {
             console.log('Error happened on stage of creating a hashedPassword ')
@@ -41,7 +51,7 @@ export const Register = async (req,res) => {
         }else{
             //Step 3
             //If User already exist, Server response status 400
-            res.status(400).json({message: 'This user is already exist'})   
+            res.status(409).json({message: userExist})   
         }
 
     } catch (error) {

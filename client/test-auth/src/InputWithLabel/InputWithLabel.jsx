@@ -6,7 +6,7 @@ export const InputWithlabel = (props) => {
     const [inputClass, setInputClass] = useState('')
     const [errorText, setErrorText] = useState('')
     useEffect(() => {
-        if (props.error == '') {
+        if (props.error == '' || props.error == undefined) {
             setLabelClass('')
             setInputClass('')
             setErrorText('')
