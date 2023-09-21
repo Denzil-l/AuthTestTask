@@ -11,6 +11,8 @@
 form{
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    height: 90%;
     width: 100%;
     padding: 0px 20px 10px 20px;
 
@@ -27,9 +29,9 @@ nav{
 }
 .back{
 position: absolute;
-top: -50%;
-transform: translate(-0%,50%);
-right: 0;
+top: 0;
+
+right: 20px;
 cursor: pointer;
 }
 .logo-small{
